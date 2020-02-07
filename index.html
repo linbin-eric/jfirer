@@ -167,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/02/07/%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%9ABASE%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
@@ -181,7 +181,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/02/07/%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%9ABASE%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">最终一致性：BASE论文学习笔记</a>
+            <a href="/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/" class="post-title-link" itemprop="url">高性能Java序列化框架Fse发布</a>
         </h1>
 
         <div class="post-meta">
@@ -191,8 +191,15 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-02-07 13:01:41" itemprop="dateCreated datePublished" datetime="2020-02-07T13:01:41+08:00">2020-02-07</time>
+              <time title="创建时间：2020-02-03 08:00:00" itemprop="dateCreated datePublished" datetime="2020-02-03T08:00:00+08:00">2020-02-03</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 15:03:01" itemprop="dateModified" datetime="2020-02-07T15:03:01+08:00">2020-02-07</time>
+              </span>
 
           
 
@@ -205,50 +212,20 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="最终一致性：BASE论文笔记"><a href="#最终一致性：BASE论文笔记" class="headerlink" title="最终一致性：BASE论文笔记"></a>最终一致性：BASE论文笔记</h1><p>[TOC]</p>
-<h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>Base论文是ebay的架构师于2008年提交的一篇论文。主要用来阐述在分布式架构设计下，基于BASE的设计思想和方案。所谓BASE就是basically available（基本的可用性），soft state（软状态，所谓的软状态，指的是暂时的不一致，后文会详细展开），eventually consistent（最终一致性）。在分布式领域，有著名的CAP理论，也就是一致性，可用性，分区容错性即可靠性,这三者无法同时获得。而base理论就是在牺牲部分一致性的基础上，来达到可用性的大幅提升的一种方案理念。<br>欢迎加入技术交流群186233599交流。</p>
-<h2 id="分区容错性"><a href="#分区容错性" class="headerlink" title="分区容错性"></a>分区容错性</h2><p>这是BASE里相对简单好操作的一个地方。比如我们需要存储用户数据，通过部署多个物理实例，将用户数据均匀的分散在其上。即使其中的一个服务器发生宕机，也不会影响到其他的数据。容忍了局部失败而提供了整体上一定的容错性。<br>容错的问题通过将数据部署多个节点来保证。那就带来下面的问题，数据的一致性如何保证。传统的业务解决方式就是2PC。依赖于数据库提供的XA事务来实现分布式下数据一致性。</p>
-<h2 id="传统的数据库事务方式在分布式领域的问题"><a href="#传统的数据库事务方式在分布式领域的问题" class="headerlink" title="传统的数据库事务方式在分布式领域的问题"></a>传统的数据库事务方式在分布式领域的问题</h2><p>考虑一个这样的场景，A给B进行转账。2个用户在不同的银行，他们的数据库部署在不同的物理节点。而转账是一个事务操作。传统意义上有所谓的分布式事务，也就是2PC这种协议来保证分布式情况下的事务。但是2PC协议的开销很大，不利于在大规模的情况下的性能表现。并且XA只是数据库层面的协议，如果应用本身是分布式的，还需要额外的落地支持。在实现上也不简单。</p>
-<h2 id="BASE方式来解决"><a href="#BASE方式来解决" class="headerlink" title="BASE方式来解决"></a>BASE方式来解决</h2><p>这个转账例子有两个数据库，如果A成功了，B失败了，此时就需要回滚A。如果我们不回滚，而是重试直到B成功也是一种可行的方案。对于同一个数据库实例，在一个连接中可以使用事务操作不同的表。基于以上的两点，我们给A增加一个消息表，用来存储需要别的库异步配合的执行消息。在这个例子中，用于存储向B发送的消息。那么我们的操作如下</p>
-<ol>
-<li>在A中开启事务，对用户执行扣钱sql，并且往消息表中新增一个消息，消息的内容是要求B执行加钱的操作。</li>
-<li>提交事务。如果事务失败则回滚，该业务失败。此时B完全无感知。</li>
-<li>如果事务提交成功，则向B发出调用，执行增加钱的操作。如果B回复成功，将消息表中的该消息删除。</li>
-<li>如果B回复失败，则发起重试，或者依靠定时任务不断重试，直到成功。</li>
-<li>成功后删除消息表中的该消息。</li>
-</ol>
-<p>我们来分析下上面的做法，首先通过A中的事务保证了在A上转账的操作落地完成并且有记录可以查询（消息表中的就是未完成的记录）。在事务提交成功后再执行和B相关的操作，返回成功才删除消息表，这样就保证操作最后总是可以成功（因为B返回了成功消息）。可以看到，在A事务成功到B调用成功这之间，数据在两个数据库上存在不一致的情况，这也是BASE理论中牺牲的强一致性的地方，但是通过这样的做法，数据在两个系统中最终是可以达到一致的，也即是所谓的最终一致性。通过牺牲强一致性，提高了系统的吞吐。并且这个不一致的时间窗口实际上对于一般的用户是无感知的。可能就是在几十毫秒到两三秒之间，用户是可以允许也是理解这样的延迟的。<br>那么上面的方案是否就已经可以解决问题了呢，答案是不。</p>
-<h2 id="幂等"><a href="#幂等" class="headerlink" title="幂等"></a>幂等</h2><p>在上面的流程可以看到，在A事务成功以后要调用B的接口，如果调用失败是需要重复调用直到成功的。问题在于，由于需要网络传输调用结果，有可能B调用实际上是成功了，但是网络中断导致A无法收到消息。那么A就会认为是调用失败，从而再次发起调用。那么B就将一个加钱的动作执行了2次。此时两边的数据处于不一致的状态，并且无法修复。为了解决这个问题，我们引入幂等约束。所谓幂等操作也就是说对于该操作，一次或多次的调用产生的结果是相同的。上面的问题就是由于调用B加钱的操作不是幂等，而A在理论上必然存在重复调用的情况（因为网络是不可靠的），进而导致数据不一致错误。那么怎么让B的加钱操作是幂等的呢？A中存在一个消息表，用于存放需要执行操作的消息，那么给B中也增加一个更新表。对于A中的每一个消息都存在一个全局唯一的id。那么调用B的加钱操作的流程修改为如下</p>
-<ol>
-<li>B开启事务。检查更新表中是否存在消息id。如果存在消息id，直接忽略该操作。并且返回A成功消息。</li>
-<li>如果不存在消息id，执行用户的加钱操作，并且往更新表中插入该消息。提交事务。提交事务成功返回A成功消息，提交失败则返回失败消息。</li>
-</ol>
-<p>使用这样的逻辑，则B的加钱操作就成为了一个幂等操作，可以承受多次调用。</p>
-<h2 id="简单的幂等"><a href="#简单的幂等" class="headerlink" title="简单的幂等"></a>简单的幂等</h2><p>上面方案的幂等依靠本地的更新表记录了所有的消息id进行比对进而防止多次的重复调用。这样需要一个更新表并且要存储所有的消息，比较重一些。如果我们给于消息一个不断递增的序号，并且b的数据表中新增一个序号字段。b只要执行消息前会比对消息的序号和自身数据的序号。如果消息序号大于自身序号才可以执行。也就是执行如下的伪代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">begin transaction</span><br><span class="line">update b set money=message.money+b.money,version=message.version where b.id = message.userid and b.version &gt; message.version</span><br><span class="line">commit</span><br><span class="line">end transaction</span><br></pre></td></tr></table></figure>
-<p>通过这样的方式，就不需要启用一个单独的更新表。然后对于B的业务表有侵入性的修改。</p>
-<h2 id="中间总结"><a href="#中间总结" class="headerlink" title="中间总结"></a>中间总结</h2><p>在有了上面的例子，现在我们来稍微总结。通过将一致性要求从强一致性降低到最终一致性，我们可以避免2PC这样的高成本协议，并且让业务具有更强的伸缩性。将上面具体的方案抽象下，其中的思路还是比较清晰的。</p>
-<ol>
-<li>将一个分布式的事务拆分成多个本地事务，引入消息概念。</li>
-<li>将本地数据更新和消息的新增绑定为一个事务，作为整体进行提交。</li>
-<li>在在一个本地事务成功的情况下，进行下一个远端的事务操作。并且要求该远端事务操作具备幂等性，可以承受重复的多次调用而不会导致数据错误。</li>
-<li>消息可以被本地被多次尝试或者在异步组件中尝试直到消息送达并且操作成功。最终让所有系统的数据达到一致。</li>
-</ol>
-<p>上面的思路重点就是在异步消息这个概念的引入。而幂等的保证方式可以有两种，一种是被调用方，也就是接口提供方，自身保存一份执行过的消息表，用于在执行操作前进行比对，避免执行重复操作。一种是将消息引入序号改变，被调用方只执行比自身序号大的消息。</p>
-<h2 id="TCC类型的幂等"><a href="#TCC类型的幂等" class="headerlink" title="TCC类型的幂等"></a>TCC类型的幂等</h2><p>上面的基于存储消息方式的幂等由于需要存储执行过的消息会带来额外的存储开销。并且执行过的消息理论上已经失去了其意义（假设调用方执行成功，后续就不会再去调用，那么就没有判重的需求了）。这种方式中，消息的序号是由消息的发送方来生成的，并且被调用方始终需要存储着所有的操作历史，历史数据会越来越多，并且都是无用的历史数据。那我们换个思路，消息的序号是由消息的收取方来生成如何。具体的操作如下</p>
-<ol>
-<li>A开启事务，执行本地业务更新，调用B的try接口传递业务参数。B的try接口调用成功则返回一个全局唯一的消息id</li>
-<li>A将这个消息id写入到消息表中。提交事务。</li>
-<li>如果事务提交成功，调用B的confirm接口。接口的参数只有消息id。表明该业务确认需要执行。B将真实执行该业务，并且将confirm执行结果返回给予A。如果成功则删除消息表中的该消息。如果失败则通过异步组件发生重试。</li>
-<li>如果事务提交失败，则调用B的cancel接口，接口参数只有消息id。表明取消该业务的执行。</li>
-</ol>
-<p>在这种方式中，消息的id是由被调用方被调用try接口时产生。此时被调用方存储该消息id。在被调用confirm或者cancel接口时，首先检查该id是否存在，存在才执行下一步的操作。对于cancel接口而言，操作只是简单的删除该消息即可。而对于confirm操作，则需要开启事务，并且在事务中执行对应的操作，并且删除消息。最终提交事务。如果事务成功提交则返回成功消息，否则返回失败。如果消息id不存在，有两种可能。</p>
-<ul>
-<li>消息id是错误的</li>
-<li>该消息已经被执行了。</li>
-</ul>
-<p>在内部可信的系统内，排除第一种情况，只有第二种情况。故而在这种情况，confirm接口的调用也是返回成功消息。这种方式，被调用方只需要存储一定规模的消息id，因为被成功执行的消息都会被删除。再给所有存储的消息一个过期时间。由后台定时组件定期扫描删除即可。这样，消息的堆积大小也是可控的了。</p>
-
+          <h1 id="高性能Java序列化框架Fse发布"><a href="#高性能Java序列化框架Fse发布" class="headerlink" title="高性能Java序列化框架Fse发布"></a>高性能Java序列化框架Fse发布</h1><p>[TOC]</p>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>将Java对象序列化为二进制数据进行保存，以及二进制数据反向序列化为Java对象，在很多场景中都有应用。比如将对象序列化后离线存储至其他介质，或者存储于Redis这样的缓存之中。</p>
+<p>目前常见的有几种框架可以支撑，比如 Hession ，Kryo，Fst，Protobuf，JDK原生等。有一些框架需要提前编写元数据配置文件以支撑跨语言序列化能力，比如 Protobuf 。不过如果团队的技术栈是统一的 Java 体系的话，则能够开箱即用的序列化框架使用起来会更加方便一些，特别有些时候对象特别复杂，编写元数据配置文件也是很繁琐的一个事情。</p>
+<p>Fse 框架正是应用于这样的场景，不需要编写元数据配置信息，开箱即用的 Java 序列化框架，对需要序列化的对象没有任何特殊要求。在性能基准测试中，该框架的性能表现显著优于其他框架，下面是测试对比</p>
+<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200204221213.png" alt=""></p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -267,7 +244,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/02/07/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/01/12/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
@@ -281,7 +258,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/02/07/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/" class="post-title-link" itemprop="url">心跳与超时：高并发高性能的时间轮超时器</a>
+            <a href="/2020/01/12/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/" class="post-title-link" itemprop="url">心跳与超时：高并发高性能的时间轮超时器</a>
         </h1>
 
         <div class="post-meta">
@@ -290,10 +267,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-02-07 12:39:26 / 修改时间：12:41:40" itemprop="dateCreated datePublished" datetime="2020-02-07T12:39:26+08:00">2020-02-07</time>
+              <time title="创建时间：2020-01-12 08:00:00" itemprop="dateCreated datePublished" datetime="2020-01-12T08:00:00+08:00">2020-01-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:48:22" itemprop="dateModified" datetime="2020-02-07T14:48:22+08:00">2020-02-07</time>
+              </span>
 
           
 
@@ -306,123 +289,622 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="心跳与超时：高并发高性能的时间轮超时器"><a href="#心跳与超时：高并发高性能的时间轮超时器" class="headerlink" title="心跳与超时：高并发高性能的时间轮超时器"></a>心跳与超时：高并发高性能的时间轮超时器</h1><p>[[TOC]]</p>
+          <h1 id="心跳与超时：高并发高性能的时间轮超时器"><a href="#心跳与超时：高并发高性能的时间轮超时器" class="headerlink" title="心跳与超时：高并发高性能的时间轮超时器"></a>心跳与超时：高并发高性能的时间轮超时器</h1><p>[TOC]</p>
 <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在许多业务场景中，我们都会碰到延迟任务，定时任务这种需求。特别的，在网络连接的场景中，常常会出现一些超时控制。由于服务端的连接数量很大，这些超时任务的数量往往也是很庞大的。实现对大量任务的超时管理并不是一个容易的事情。</p>
 <p>本章我们将介绍几种用于实现超时任务的数据结构，并且最后分析 Netty 在超时任务上采取的结构和代码。</p>
 <p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
-<h2 id="JDK-原生提供的超时任务支持"><a href="#JDK-原生提供的超时任务支持" class="headerlink" title="JDK 原生提供的超时任务支持"></a>JDK 原生提供的超时任务支持</h2><h3 id="java-util-Timer"><a href="#java-util-Timer" class="headerlink" title="java.util.Timer"></a>java.util.Timer</h3><p>JDK 在 1.3 的时候引入了<code>Timer</code>数据结构用于实现定时任务。<code>Timer</code>的实现思路比较简单，其内部有两个主要属性：</p>
-<ul>
-<li><p><code>TaskQueue</code>：定时任务抽象类<code>TimeTask</code>的列表。</p>
-</li>
-<li><p><code>TimerThread</code>：用于执行定时任务的线程。</p>
-</li>
-</ul>
-<p><code>Timer</code>结构还定义了一个抽象类<code>TimerTask</code>并且继承了<code>Runnable</code>接口。业务系统实现了这个抽象类的<code>run</code>方法用于提供具体的延时任务逻辑。</p>
-<p><code>TaskQueue</code>内部采用大顶堆的方式，依据任务的触发时间进行排序。而<code>TimerThread</code>则以死循环的方式从<code>TaskQueue</code>获取队列头，等待队列头的任务的超时时间到达后触发该任务，并且将任务从队列中移除。</p>
-<p><code>Timer</code>的数据结构和算法都很容易理解。所有的超时任务都首先进入延时队列。后台超时线程不断的从延迟队列中获取任务并且等待超时时间到达后执行任务。延迟队列采用大顶堆排序，在延迟任务的场景中有三种操作，分别是：添加任务，提取队列头任务，查看队列头任务。</p>
-<p>查看队列头任务的事件复杂度是 O(1) 。而添加任务和提取队列头任务的时间复杂度都是 O(Log<sub>2</sub>n) 。当任务数量较大时，添加和删除的开销也是比较大的。此外，由于<code>Timer</code>内部只有一个处理线程，如果有一个延迟任务的处理消耗了较多的时间，会对应的延迟后续任务的处理。</p>
-<h3 id="ScheduledThreadPoolExecutor"><a href="#ScheduledThreadPoolExecutor" class="headerlink" title="ScheduledThreadPoolExecutor"></a>ScheduledThreadPoolExecutor</h3><p>由于<code>Timer</code>只有一个线程用来处理延迟任务，在任务数量很多的时候显然是不足够的。在 JDK1.5  引入线程池接口<code>ExecutorService</code>后，也对应的提供了一个用于处理延时任务的<code>ScheduledExecutorService</code>子类接口。该接口内部也一样使用了一个使用小顶堆进行排序的延迟队列存放任务。线程池中的线程会在这个队列上等待直到有任务可以提取。</p>
-<p><code>ScheduledExecutorService</code>的实现上有一些特殊，只有一个线程能够提取到延迟队列头的任务，并且根据任务的超时时间进行等待。在这个等待期间，其他的线程是无法获取任务的。这样的实现是为了避免多个线程同时获取任务，导致超时时间未到达就任务触发或者在等待任务超时时间时有新的任务被加入而无法响应。</p>
-<p>由于<code>ScheduledExecutorService</code>可以使用多个线程，这样也缓解了因为个别任务执行时间长导致的后续任务被阻塞的情况。不过延迟队列也是一样采用小顶堆的排序方式，因此添加任务和删除任务的时间复杂度都是  O(Log<sub>2</sub>n)  。在任务数量很大的情况下，性能表现比较差。</p>
-<h2 id="更高效的数据结构"><a href="#更高效的数据结构" class="headerlink" title="更高效的数据结构"></a>更高效的数据结构</h2><p>虽然<code>Timer</code>和<code>ScheduledThreadPoolExecutor</code>都提供了对延迟任务的支撑能力，但是由于新增任务和提取任务的时间复杂度都是 O(Log<sub>2</sub>n) ，在任务数量很大，比如几万，十几万的时候，性能的开销就变得很巨大。</p>
-<p>那么，是否存在新增任务和提取任务比 O(Log<sub>2</sub>n)  复杂度更低的数据结构呢？答案是存在的。在论文《Hashed and Hierarchical Timing Wheels》中设计了一种名为时间轮（ Timing Wheels ）的数据结构，这种结构在处理延迟任务时，其新增任务和删除任务的时间复杂度降低到了 O(1) 。</p>
-<h3 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h3><p>时间轮的数据结构很类似于我们钟表上的数据指针，故而得名时间轮。其数据结构用图示意如下</p>
-<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200128133904.jpg" alt=""></p>
-<p>每一个时间“格子”我们称之为槽位，槽位中存放着延迟任务队列。槽位本身代表着一个时间单位，比如 1 秒。时间轮拥有的槽位个数就是该时间轮能够处理的最大延迟跨度的任务，槽位的时间单位代表着时间轮的精度。这意味着小于时间单位的时间在该时间轮是无法被区分的。</p>
-<p>槽位上的延迟任务队列中的任务都有相同的延迟时间。每一个单位时间，指针都会移动到下一个槽位。当指针指向某一个槽位时，该槽位的延迟任务队列中的任务都会被触发。</p>
-<p>当有一个延迟任务要插入时间轮时，首先计算其延迟时间与单位时间的余值，从指针指向的当前槽位移动余值的个数槽位，就是该延迟任务需要被放入的槽位。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/01/12/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/01/09/%E6%94%AF%E6%8C%81%E8%87%AA%E5%8A%A8%E6%99%8B%E5%8D%87%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/09/%E6%94%AF%E6%8C%81%E8%87%AA%E5%8A%A8%E6%99%8B%E5%8D%87%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-title-link" itemprop="url">支持优先级内部晋升的无锁并发优先级线程池</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-09 08:00:00" itemprop="dateCreated datePublished" datetime="2020-01-09T08:00:00+08:00">2020-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:49:31" itemprop="dateModified" datetime="2020-02-07T14:49:31+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="支持优先级内部晋升的无锁并发优先级线程池"><a href="#支持优先级内部晋升的无锁并发优先级线程池" class="headerlink" title="支持优先级内部晋升的无锁并发优先级线程池"></a>支持优先级内部晋升的无锁并发优先级线程池</h1><p>[TOC]</p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在技术群讨论到一个有意思的业务需求，可以描述为：</p>
 <blockquote>
-<p>举个例子，时间轮有8个槽位，编号为 0 ~ 7 。指针当前指向槽位 2 。新增一个延迟时间为 4 秒的延迟任务，4 % 8 = 4，因此该任务会被插入 4 + 2 = 6，也就是槽位6的延迟任务队列。</p>
+<p>有一个内部按照优先级进行任务排序的线程池。线程池会优先执行高优先级的任务。随着时间的流逝，线程池内部低优先级的任务的优先级会逐渐晋升变为高优先级，以避免被不断新增的高优先级任务阻塞导致饿死。</p>
 </blockquote>
-<p>时间轮的槽位实现可以采用循环数组的方式达成，也就是让指针在越过数组的边界后重新回到起始下标。概括来说，可以将时间轮的算法描述为</p>
-<blockquote>
-<p>用队列来存储延迟任务，同一个队列中的任务，其延迟时间相同。用循环数组的方式来存储元素，数组中的每一个元素都指向一个延迟任务队列。</p>
-</blockquote>
-<blockquote>
-</blockquote>
-<blockquote>
-<p>有一个当前指针指向数组中的某一个槽位，每间隔一个单位时间，指针就移动到下一个槽位。被指针指向的槽位的延迟队列，其中的延迟任务全部被触发。</p>
-</blockquote>
-<blockquote>
-</blockquote>
-<blockquote>
-<p>在时间轮中新增一个延迟任务，将其延迟时间除以单位时间得到的余值，从当前指针开始，移动余值对应个数的槽位，就是延迟任务被放入的槽位。</p>
-</blockquote>
-<p>基于这样的数据结构，插入一个延迟任务的时间复杂度就下降到 O(1) 。而当指针指向到一个槽位时，该槽位连接的延迟任务队列中的延迟任务全部被触发。</p>
-<p>延迟任务的触发和执行不应该影响指针向后移动的时间精确性。因此一般情况下，用于移动指针的线程只负责任务的触发，任务的执行交由其他的线程来完成。比如，可以将槽位上的延迟任务队列放入到额外的线程池中执行，然后在槽位上新建一个空白的新的延迟任务队列用于后续任务的添加。</p>
-<h3 id="支撑更多超过范围的延迟时间"><a href="#支撑更多超过范围的延迟时间" class="headerlink" title="支撑更多超过范围的延迟时间"></a>支撑更多超过范围的延迟时间</h3><p>在基本原理中我们分析了时间轮的基础结构。不过当时我们假设需要插入的延迟任务的时间不会超过时间轮的长度，也就是说每一个槽位上的延迟任务队列中的任务的延迟时间都是相同的。</p>
-<p>在这种情况下，要支持更大时间跨度的延迟任务，要么增加时间轮的槽位数，要么减少时间轮的精度，也就是每一个槽位代表的单位时间。时间轮的精度显然是一个业务上的硬性要求，那么只能增加槽位数。假设要求精度为 1 秒，要能支持延迟时间为 1 天的延迟任务，时间轮的槽位数需要 60 × 60 × 24 = 86400 。这就需要消耗更多的内存。显然，单纯增加槽位数并不是一个好的解决方案。</p>
-<p>在论文中，针对大跨度的延迟任务支持，提供了两种扩展方案。</p>
-<h4 id="方案一：不同轮次的延迟任务共存相同的延迟队列"><a href="#方案一：不同轮次的延迟任务共存相同的延迟队列" class="headerlink" title="方案一：不同轮次的延迟任务共存相同的延迟队列"></a>方案一：不同轮次的延迟任务共存相同的延迟队列</h4><p>在该方案中，算法引入了“轮次”的概念，延迟任务的延迟时间除以时间轮长度得到的商值为轮次。延迟任务的延迟时间除以时间轮长度得到的余数为要插入的槽位偏移量。</p>
-<p>当插入延迟任务时首先计算轮次和槽位偏移量，通过槽位偏移量确定延迟任务插入的槽位。当指针指向某一个槽位时，对槽位指向的延迟任务队列进行遍历，其中轮次为0的延迟任务全部触发，其余任务则等待下一个周期。</p>
-<p>通过引入轮次，就可以在有限的槽位上支持无穷时间范围的延迟任务。但是虽然插入任务的时间复杂度仍然是 O(1) ，但是在延迟任务触发时却需要遍历延迟任务队列来确认其轮次是否为0。任务触发时的时间复杂却上升为了 O(n) 。</p>
-<p>对于这个情况，还有一个变化的细节可以采用，就是将延迟任务队列按照轮次进行排序，比方说使用小顶堆对延迟任务队列进行排序。这样，当指针指向一个槽位触发延迟任务时，只需要不断的从队列头取出任务进行轮次检查，一旦任务轮次不等于0就可以停止。任务触发的时间复杂度下降为 O(1) 。对应的，由于队列是排序的了，任务插入的时候除了需要定位插入的槽位，还需要定位在队列中的插入位置。插入的时间复杂度变化为 O(1) 和 O(Log<sub>2</sub>n) ，n 为该槽位上延迟任务队列的长度。</p>
-<h4 id="方案二：多层次时间轮"><a href="#方案二：多层次时间轮" class="headerlink" title="方案二：多层次时间轮"></a>方案二：多层次时间轮</h4><p>看看手表的设计，有秒针，分针，时针。像秒针与分针，虽然都有 60 格 ，但是各自的格子代表的时间长度不同。参考这个思路，我们可以声明多个不同层级的时间轮，每一个时间轮的槽位的时间跨度是其次级时间轮的整体时间范围。</p>
-<p>当低层级的时间轮的指针完整的走完一圈，其对应的高层级时间轮对应的移动一个槽位。并且高层级时间轮指针指向的槽位中的任务按照延迟时间计算，重新放入到低层级时间轮的不同槽位中。这样的方式，保证了每一个时间轮中的每一个槽位的延迟任务队列中的任务都具备相同时间精度的延迟时间。</p>
-<p>以精度为 1 秒，时间范围为 1 天的时间轮为例子，可以设计三级时间轮：秒级时间轮有 60 个槽位，每个槽位的时间为 1 秒；分钟级时间轮有 60 个槽位，每个槽位的时间为 60 秒；小时级时间轮有24个槽位，每个槽位的时间为 60 分钟。当秒级时间轮走完 60 秒后，秒级时间轮的指针再次指向下标为0的槽位，而分钟级时间轮的指针向后移动一个槽位，并且将该槽位上的延迟任务全部取出并且重新计算后放入秒级时间轮。</p>
-<p>总共只需要 60 + 60 + 24 = 144 个槽位即可支撑。对比上面提到的单级时间轮需要 86400 个槽位而言，节省了相当的内存。</p>
-<p>层级时间轮有两种常见的做法：</p>
-<ul>
-<li><p>固定时间范围：时间轮的个数，以及不同层级的时间轮的槽位数是通过构造方法的入参指定，这意味着时间轮整体能够支撑的时间范围是在构造方法的时候被确定。</p>
-</li>
-<li><p>非固定时间范围：定义好一个时间轮的槽位个数，以及最小的时间轮的槽位时间。当插入的延迟任务的时间超过时间轮范围时则动态生成更高层级的时间轮。由于时间轮是在运行期生成，并且根据任务的延迟时间计算，当已经存在的时间轮不满足其延迟时间范围要求时，动态生成高层级时间轮，因此整体能够支撑的时间范围是没有上限的。</p>
-</li>
-</ul>
-<h2 id="Netty-的时间轮实现"><a href="#Netty-的时间轮实现" class="headerlink" title="Netty 的时间轮实现"></a>Netty 的时间轮实现</h2><p>时间轮算法的核心思想就是通过循环数组和指针移动的方式，将新增延迟任务的时间复杂度下降到 O(1) ，但是在具体实现上，包括如何处理更大时间跨度的延迟任务上，各家不同的实现都会有一些细节上的变化。下面我们以 Netty 中都时间轮实现为例子来进行代码分析。</p>
-<h3 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h3><p>Netty 的实现自定义了一个超时器的接口<code>io.netty.util.Timer</code>，其方法如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Timer</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//新增一个延时任务，入参为定时任务TimerTask，和对应的延迟时间</span></span><br><span class="line"></span><br><span class="line">    <span class="function">Timeout <span class="title">newTimeout</span><span class="params">(TimerTask task, <span class="keyword">long</span> delay, TimeUnit unit)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//停止时间轮的运行，并且返回所有未被触发的延时任务</span></span><br><span class="line"></span><br><span class="line">    Set &lt; Timeout &gt; stop();</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Timeout</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">Timer <span class="title">timer</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">TimerTask <span class="title">task</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isExpired</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isCancelled</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑到 JDK 已经为开发者提供了自定义线程池<code>ThreadPoolExecutor</code>以及优先级队列<code>PriorityBlockingQueue</code>，两者相结合并且定期调整队列中低优先级任务的优先级再进行<code>resort</code>将低优先级的任务调整到队列的前头，也可以一定程度上避免被饿死。</p>
+<p>这种方案的问题在于<code>resort</code>的消耗比较高，并且还需要重新计算每一个任务的优先级。为此，引出我们下面的设计，希望使用无锁并发的数据结构存储任务，并且任务支持自动的优先级晋升，保证低优先级的任务最终能够执行而不会被不断增加的高优先级任务饿死。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/01/09/%E6%94%AF%E6%8C%81%E8%87%AA%E5%8A%A8%E6%99%8B%E5%8D%87%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97%E7%BA%BF%E7%A8%8B%E6%B1%A0/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
 
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/12/24/%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%9ABASE%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
-<p><code>Timeout</code>接口是对延迟任务的一个封装，其接口方法说明其实现内部需要维持该延迟任务的状态。后续我们分析其实现内部代码时可以更容易的看到。</p>
-<p><code>Timer</code>接口有唯一实现<code>HashedWheelTimer</code>。首先来看其构造方法，如下</p>
-<h3 id="构建循环数组"><a href="#构建循环数组" class="headerlink" title="构建循环数组"></a>构建循环数组</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashedWheelTimer</span><span class="params">(ThreadFactory threadFactory, <span class="keyword">long</span> tickDuration, TimeUnit unit, <span class="keyword">int</span> ticksPerWheel, <span class="keyword">boolean</span> leakDetection, <span class="keyword">long</span> maxPendingTimeouts)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略代码，省略参数非空检查内容。</span></span><br><span class="line"></span><br><span class="line">    wheel = createWheel(ticksPerWheel);</span><br><span class="line"></span><br><span class="line">    mask = wheel.length - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略代码，省略槽位时间范围检查，避免溢出以及小于 1 毫秒。</span></span><br><span class="line"></span><br><span class="line">    workerThread = threadFactory.newThread(worker);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略代码，省略资源泄漏追踪设置以及时间轮实例个数检查</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
 
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/24/%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%9ABASE%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">最终一致性：BASE论文笔记</a>
+        </h1>
 
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
 
-<p>首先是方法<code>createWheel</code>，用于创建时间轮的核心数据结构，循环数组。来看下其方法内容</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> HashedWheelBucket[] createWheel(<span class="keyword">int</span> ticksPerWheel)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略代码，确认 ticksPerWheel 处于正确的区间</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//将 ticksPerWheel 规范化为 2 的次方幂大小。</span></span><br><span class="line"></span><br><span class="line">    ticksPerWheel = normalizeTicksPerWheel(ticksPerWheel);</span><br><span class="line"></span><br><span class="line">    HashedWheelBucket[] wheel = <span class="keyword">new</span> HashedWheelBucket[ticksPerWheel];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; wheel.length; i++)</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        wheel[i] = <span class="keyword">new</span> HashedWheelBucket();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> wheel;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+              <time title="创建时间：2019-12-24 08:00:00" itemprop="dateCreated datePublished" datetime="2019-12-24T08:00:00+08:00">2019-12-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:51:12" itemprop="dateModified" datetime="2020-02-07T14:51:12+08:00">2020-02-07</time>
+              </span>
 
+          
 
+        </div>
+      </header>
 
-<p>数组的长度为 2 的次方幂方便进行求商和取余计算。</p>
-<p><code>HashedWheelBucket</code>内部存储着由<code>HashedWheelTimeout</code>节点构成的双向链表，并且存储着链表的头节点和尾结点，方便于任务的提取和插入。</p>
-<h3 id="新增延迟任务"><a href="#新增延迟任务" class="headerlink" title="新增延迟任务"></a>新增延迟任务</h3><p>方法<code>HashedWheelTimer#newTimeout</code>用于新增延迟任务，下面来看下代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Timeout <span class="title">newTimeout</span><span class="params">(TimerTask task, <span class="keyword">long</span> delay, TimeUnit unit)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略代码，用于参数检查</span></span><br><span class="line"></span><br><span class="line">    start();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> deadline = System.nanoTime() + unit.toNanos(delay) - startTime;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(delay &gt; <span class="number">0</span> &amp;&amp; deadline &lt; <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        deadline = Long.MAX_VALUE;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    HashedWheelTimeout timeout = <span class="keyword">new</span> HashedWheelTimeout(<span class="keyword">this</span>, task, deadline);</span><br><span class="line"></span><br><span class="line">    timeouts.add(timeout);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> timeout;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
+      
+          <h1 id="最终一致性：BASE论文笔记"><a href="#最终一致性：BASE论文笔记" class="headerlink" title="最终一致性：BASE论文笔记"></a>最终一致性：BASE论文笔记</h1><p>[TOC]</p>
+<h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>Base论文是ebay的架构师于2008年提交的一篇论文。主要用来阐述在分布式架构设计下，基于BASE的设计思想和方案。所谓BASE就是basically available（基本的可用性），soft state（软状态，所谓的软状态，指的是暂时的不一致，后文会详细展开），eventually consistent（最终一致性）。在分布式领域，有著名的CAP理论，也就是一致性，可用性，分区容错性即可靠性,这三者无法同时获得。而base理论就是在牺牲部分一致性的基础上，来达到可用性的大幅提升的一种方案理念。<br>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/12/24/%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%9ABASE%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
 
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
-<p>可以看到，在新增任务的时候，任务并不是直接进入到循环数组中，而是首先被放入到一个队列，也就是属性<code>timeouts</code>，该队列是一个 MPSC 类型的队列，采用这个模式主要出于提升并发性能考虑，因为这个队列只有线程<code>workerThread</code>会进行任务提取操作。</p>
-<p>该线程是在构造方法中通过调用<code>workerThread = threadFactory.newThread(worker)</code>被创建。但是创建之后并不是马上执行线程的<code>start</code>方法，其启动的时机是这个时间轮第一次新增延迟任务的时候，也就是本方法中的<code>start</code>方法的内容。下面是其代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span>(WORKER_STATE_UPDATER.get(<span class="keyword">this</span>))</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> WORKER_STATE_INIT:</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(WORKER_STATE_UPDATER.compareAndSet(<span class="keyword">this</span>, WORKER_STATE_INIT, WORKER_STATE_STARTED))</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                workerThread.start();</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> WORKER_STATE_STARTED:</span><br><span class="line"></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> WORKER_STATE_SHUTDOWN:</span><br><span class="line"></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"cannot be started once stopped"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line"></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"Invalid WorkerState"</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(startTime == <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            startTimeInitialized.await();</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">catch</span>(InterruptedException ignore)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Ignore - it will be ready very soon.</span></span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/12/22/Activiti%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%E5%8F%8A%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/">
 
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
 
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/22/Activiti%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%E5%8F%8A%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Activiti架构分析及源码详解</a>
+        </h1>
 
-<p>方法很明显的分为两个部分，第一部分为<code>Switch</code>方法块，通过对状态变量的 CAS 操作，确保只有一个线程能够执行<code>workerThread.start()</code>方法来启动工作线程，避免并发异常。第二部分为阻塞等待，通过<code>CountDownLatch</code>类型变量<code>startTimeInitialized</code>执行阻塞等待，用于等待工作线程<code>workerThread</code>真正进入工作状态。</p>
-<p>从<code>newTimeout</code>方法的角度来看，插入延迟任务首先是放入队列中，之前分析数据结构的时候也说过任务的触发是指针指向时间轮中某个槽位时进行，那么必然存在一个需要将队列中的延迟任务放入到时间轮的数组之中的工作。这个动作显然就是就是由<code>workerThread</code>工作线程来完成。下面就来看下这个线程的具体代码内容。</p>
-<h3 id="工作线程workerThread"><a href="#工作线程workerThread" class="headerlink" title="工作线程workerThread"></a>工作线程workerThread</h3><p>工作线程是依托于<code>HashedWheelTimer.Worker</code>这个实现了<code>Runnable</code>接口的类进行工作的，那下面看下其对<code>run</code>方法的实现代码，如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#123;<span class="comment">//代码块①</span></span><br><span class="line"></span><br><span class="line">        startTime = System.nanoTime();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(startTime == <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//使用startTime==0 作为线程进入工作状态模式标识，因此这里重新赋值为1</span></span><br><span class="line"></span><br><span class="line">            startTime = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//通知外部初始化工作线程的线程，工作线程已经启动完毕</span></span><br><span class="line"></span><br><span class="line">        startTimeInitialized.countDown();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;<span class="comment">//代码块②</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> deadline = waitForNextTick();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(deadline &gt; <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">int</span> idx = (<span class="keyword">int</span>)(tick &amp; mask);</span><br><span class="line"></span><br><span class="line">                processCancelledTasks();</span><br><span class="line"></span><br><span class="line">                HashedWheelBucket bucket = wheel[idx];</span><br><span class="line"></span><br><span class="line">                transferTimeoutsToBuckets();</span><br><span class="line"></span><br><span class="line">                bucket.expireTimeouts(deadline);</span><br><span class="line"></span><br><span class="line">                tick++;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">while</span> (WORKER_STATE_UPDATER.get(HashedWheelTimer.<span class="keyword">this</span>) == WORKER_STATE_STARTED);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;<span class="comment">//代码块③</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(HashedWheelBucket bucket: wheel)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            bucket.clearTimeouts(unprocessedTimeouts);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(;;)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            HashedWheelTimeout timeout = timeouts.poll();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(timeout == <span class="keyword">null</span>)</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(!timeout.isCancelled())</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                unprocessedTimeouts.add(timeout);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        processCancelledTasks();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
 
+              <time title="创建时间：2019-12-22 08:00:00" itemprop="dateCreated datePublished" datetime="2019-12-22T08:00:00+08:00">2019-12-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:53:05" itemprop="dateModified" datetime="2020-02-07T14:53:05+08:00">2020-02-07</time>
+              </span>
 
+          
 
-<h4 id="线程启动与准备工作"><a href="#线程启动与准备工作" class="headerlink" title="线程启动与准备工作"></a>线程启动与准备工作</h4><p>为了方便阅读，这边将<code>run</code>方法的内容分为三个代码块。首先来看<strong>代码块①</strong>。通过系统调用<code>System.nanoTime</code>为启动时间<code>startTime</code>设置初始值，该变量代表了时间轮的基线时间，用于后续相对时间的计算。赋值完毕后，通过<code>startTimeInitialized</code>变量对外部的等待线程进行通知。</p>
-<h4 id="驱动指针和任务触发"><a href="#驱动指针和任务触发" class="headerlink" title="驱动指针和任务触发"></a>驱动指针和任务触发</h4><p>接着来看<strong>代码块②</strong>。这是主要的工作部分，整体是在一个<code>while</code>循环中，确保工作线程只在时间轮没有被终止的时候工作。首先来看方法<code>waitForNextTick</code>，在时间轮中，指针移动一次，称之为一个<code>tick</code>，这个方法显然内部应该是用于等待指针移动到下一个<code>tick</code>，来看具体代码，如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">long</span> <span class="title">waitForNextTick</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> deadline = tickDuration * (tick + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(;;)</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> currentTime = System.nanoTime() - startTime;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">long</span> sleepTimeMs = (deadline - currentTime + <span class="number">999999</span>) / <span class="number">1000000</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(sleepTimeMs &lt;= <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(currentTime == Long.MIN_VALUE)</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> -Long.MAX_VALUE;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> currentTime;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(PlatformDependent.isWindows())</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            sleepTimeMs = sleepTimeMs / <span class="number">10</span> * <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            Thread.sleep(sleepTimeMs);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">catch</span>(InterruptedException ignored)</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(WORKER_STATE_UPDATER.get(HashedWheelTimer.<span class="keyword">this</span>) == WORKER_STATE_SHUTDOWN)</span><br><span class="line"></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> Long.MIN_VALUE;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        </div>
+      </header>
 
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
+      
+          <h1 id="Activiti架构分析及源码详解"><a href="#Activiti架构分析及源码详解" class="headerlink" title="Activiti架构分析及源码详解"></a>Activiti架构分析及源码详解</h1><p>[TOC]</p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>工作流引擎，应用于解决流程审批和流程编排方面等问题，有效的提供了扩展性的支撑。而目前来说，工作流领域也有了相对通行化的标准规范，也就是BPMN2.0。支持这个规范的开源引擎主要有：Activiti，flowable，Jbpm4等。本文着重对Activiti的架构设计进行分析和梳理，同时对流程启动和原子操作的相关代码进行完整走读。</p>
+<p>本文的阅读对象需要对Activiti有一定的理解并且已经能够初步的使用Activiti进行流程流转方面开发。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注技术公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/12/22/Activiti%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%E5%8F%8A%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
 
-<p>整个方法的思路很简单，前面说过，时间轮每移动一次指针，意味着一个<code>tick</code>。这里<code>tick</code>可以看成是指针移动的次数。由于槽位的时间范围是固定的，因此可以简单的计算出来指针移动到下一个槽位，<strong>理论</strong>上应该经过的时间，也就是<code>long deadline = tickDuration * (tick + 1)</code> 。之后再计算从时间轮启动到当前，<strong>实际</strong>经过的时间，也就是<code>long currentTime = System.nanoTime() - startTime</code> 。二者的差值就是线程所需要睡眠的时间。</p>
-<p>如果差值小于0，意味着实际经过的时间超过了理论时间，此时已经超出了应该休眠的范围，方法需要立即返回。由于在这个方法的执行过程中，可能会遇到时间轮被停止的情况，因此使用一个特殊值来表达这个事件，也就是<code>Long.MIN_VALUE</code>，这也是为什么<code>currentTime</code>要避开这个值的原因。</p>
-<p>还有一点需要注意，<code>Thread.sleep</code>方法的实现是依托于操作系统提供的中断检查，也就是操作系统会在每一个中断的时候去检查是否有线程需要唤醒并且提供CPU资源。默认情况下 Linux 的中断间隔是 1 毫秒，而 Windows 的中断间隔是 10 毫秒或者 15 毫秒，具体取决于硬件识别。</p>
-<p>如果是在 Windows 平台下，当方法调用<code>Thread.sleep</code>传入的参数不是10的整数倍时，其内部会调用系统方法<code>timeBeginPeriod()</code>和<code>timeEndPeriod()</code>来修改中断周期为 1 毫秒，并且在休眠结束后再次设置回默认值。这样的目的是为了保证休眠时间的准确性。但是在 Windows 平台下，频繁的调用修改中断周期会导致 Windows 时钟出现异常，大多数时候的表现是导致时钟加快。这将导致比如尝试休眠 10 秒时，实际上只休眠了 9 秒。所以在这里，通过<code>sleepTimeMs = sleepTimeMs / 10 * 10</code>保证了<code>sleepTimeMs</code> 是 10 的整数倍，从而避免了 Windows 的这个 BUG 。</p>
-<p>当方法<code>waitForNextTick</code>返回后，并且返回的值是正数，意味着当前<code>tick</code>的休眠等待已经完成，可以进行延迟任务的触发处理了。通过<code>int idx = (int)(tick &amp; mask)</code>调用，确定下一个被触发延迟任务的槽位在循环数组中的下标。在处理触发任务之前，首先将已经取消的延迟任务从槽位所指向的延迟任务队列中删除。每次调用<code>HashedWheelTimer#newTimeout</code>新增延迟任务时都会返回一个<code>Timeout</code>对象，可以通过<code>cancle</code>方法将这个延迟任务取消。当执行取消动作的时候，并不会直接从延迟队列中删除，而是将这个对象放入到取消队列，也就是<code>HashedWheelTimer.cancelledTimeouts</code>属性。在准备遍历槽位上延迟任务队列之前，通过方法<code>processCancelledTasks</code>来遍历这个取消队列，将其中的延迟任务从各自槽位上的延迟任务队列中删除。使用这种方式的好处在于延迟任务的删除只有一个线程会进行，避免了多线程带来的并发干扰，减少了开发难度。</p>
-<p>在处理完取消的延迟任务后，调用方法<code>transferTimeoutsToBuckets</code>来将新增延迟任务队列<code>HashedWheelTimer.timeouts</code>中的延迟任务分别添加到合适其延迟时间的槽位中。方法的代码很简单，就是循环不断从<code>timeouts</code>取出任务，并且计算其延迟时间与时间轮范围的商值和余数，结果分别为其轮次与槽位下标。根据槽位下标将该任务添加到槽位对应的延迟任务队列中。</p>
-<p>在这里可以看到 Netty 作者对时间轮这一结构的并发设计，新增任务是向 MPSC 队列新增元素实现。而槽位上的延迟任务队列只有时间轮本身的线程能够进行新增和删除，设计为了 SPSC  模式。前者是为了提高无锁并发下的性能，后者则是通过约束，减少了设计难度。</p>
-<p><code>transferTimeoutsToBuckets</code>方法每次最多只会转移 100000 个延迟任务到合适的槽位中，这是为了避免外部循环添加任务导致的饿死。方法执行完毕后，就到了槽位上延迟任务的触发处理，也就是方法<code>HashedWheelBucket#expireTimeouts</code>的功能，方法内的逻辑也很简单。遍历队列，如果延迟任务的轮次不为 0，则减 1。否则触发任务执行方法，也就是<code>HashedWheelTimeout#expire</code>。该方法内部依然通过 CAS 方式对状态进行更新，避免方法的触发和取消之间的竞争冲突。从这个方法的实现可以看到，Netty 采用了轮次的方式来对超出时间轮范围的延迟时间进行支持。多层级时间轮的实现相比轮次概念的实现更为复杂，考虑到在网络IO应用中，超出时间轮范围的场景比较少，使用轮次的方式去支撑更大的时间，是一个相对容易实现的方案。</p>
-<p>当需要被触发的延迟任务都被触发后，通过<code>tick</code>加 1 来表达指针移动到下一个槽位。</p>
-<h4 id="时间轮停止"><a href="#时间轮停止" class="headerlink" title="时间轮停止"></a>时间轮停止</h4><p>外部线程通过调用<code>HashedWheelTimer#stop</code>方法来停止时间轮，停止的方式很简单，就是通过 CAS 调用来修改时间轮的状态属性。而在<strong>代码块②</strong>中通过循环的方式在每一次<code>tick</code>都会检查这个状态位。代码块③的内容很简单，遍历所有的槽位，并且遍历槽位的延迟任务队列，将所有未到达延迟时间并且未取消的任务，都放入到一个集合中，最终将这个集合返回。这个集合内存储的就是所有未能执行的延迟任务。</p>
-<h2 id="思考总结"><a href="#思考总结" class="headerlink" title="思考总结"></a>思考总结</h2><p>在处理大量延迟任务的场景中，时间轮是一个很高效的算法与数据结构。Netty 在对时间轮的实现上，在添加任务，过期任务，删除任务等环节进行了一些细节上的调整。实际上，不同中间件中都有对时间轮的一些实现，各自也都有区别，但是核心都是围绕在循环数组与槽位过期这个概念上。不同的细节变化有各自适合的场景和考量。</p>
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/11/30/%E4%BB%8E2-3-4%E6%A0%91%E6%A8%A1%E5%9E%8B%E5%88%B0%E7%BA%A2%E9%BB%91%E6%A0%91%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/30/%E4%BB%8E2-3-4%E6%A0%91%E6%A8%A1%E5%9E%8B%E5%88%B0%E7%BA%A2%E9%BB%91%E6%A0%91%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">从2-3-4树模型到红黑树实现</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-30 08:00:00" itemprop="dateCreated datePublished" datetime="2019-11-30T08:00:00+08:00">2019-11-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:54:39" itemprop="dateModified" datetime="2020-02-07T14:54:39+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="从2-3-4树模型到红黑树实现"><a href="#从2-3-4树模型到红黑树实现" class="headerlink" title="从2-3-4树模型到红黑树实现"></a>从2-3-4树模型到红黑树实现</h1><p>[TOC]</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>红黑树，是一个高效的二叉查找树。其定义特性保证了树的路径长度在黑色节点上完美平衡，使得其查找效率接近于完美平衡的二叉树。</p>
+<p>但是红黑树的实现逻辑很复杂，各种旋转，颜色变化，直接针对其分析，大多数都是死记硬背各种例子，不太容易有个直观的理解。实际上，红黑树是实现手段，是其他概念模型为了方便在二叉树上实现进而定义的节点颜色这个信息。如果从概念模型入手，再一一对应，就容易理解的多了。而红黑树能够对应的模型有2-3树，2-3-4树等，下面我们会以2-3-4树作为概念模型，对红黑树进行分析。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注技术公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/11/30/%E4%BB%8E2-3-4%E6%A0%91%E6%A8%A1%E5%9E%8B%E5%88%B0%E7%BA%A2%E9%BB%91%E6%A0%91%E5%AE%9E%E7%8E%B0/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/" class="post-title-link" itemprop="url">ConcurrentHashMap源码走读</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-04 08:00:00" itemprop="dateCreated datePublished" datetime="2019-11-04T08:00:00+08:00">2019-11-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:58:55" itemprop="dateModified" datetime="2020-02-07T14:58:55+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ConcurrentHashMap源码走读"><a href="#ConcurrentHashMap源码走读" class="headerlink" title="ConcurrentHashMap源码走读"></a>ConcurrentHashMap源码走读</h1><p>[TOC]</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在从JDK8开始，为了提高并发度，<code>ConcurrentHashMap</code>的源码进行了很大的调整。在JDK7中，采用的是分段锁的思路。简单的说，就是<code>ConcurrentHashMap</code>是由多个<code>HashMap</code>构成。当需要进行写入操作的时候，会寻找到对应的<code>HashMap</code>，使用<code>synchronized</code>对对应的<code>hashmap</code>加锁，然后执行写入操作。显然，并发程度就取决于<code>HashMap</code>个数的多少。而在JDK8中换了一种完全不同的思路。</p>
+<p>首先，仍然是使用<code>Entry[]</code>作为数据的基本存储。但是锁的粒度被缩小到了数组中的每一个槽位上，数据读取的可见性依靠<code>volatile</code>来保证。而在尝试写入的时候，会将对应的槽位上的元素作为加锁对象，使用<code>synchronized</code>进行加锁，来保证并发写入的安全性。</p>
+<p>除此之外，如果多个Key的<code>hashcode</code>在取模后落在了相同的槽位上，在一定数量内（默认是8），采用链表的方式连接节点；超过之后，为了提高查询效率，会将槽位上的节点转为使用红黑树结构进行存储。</p>
+<p>还有一个比较大的改变在于当进行扩容的时候，除了扩容线程本身，如果其他线程识别到了扩容进行中，则会尝试协助扩容。</p>
+<p>下面来看下来针对几个重点方法进行源码分析。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注技术公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/09/29/%E7%90%86%E8%A7%A3OAuth2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/29/%E7%90%86%E8%A7%A3OAuth2/" class="post-title-link" itemprop="url">理解OAuth2</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-29 09:00:00" itemprop="dateCreated datePublished" datetime="2019-09-29T09:00:00+08:00">2019-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:58:55" itemprop="dateModified" datetime="2020-02-07T14:58:55+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="理解OAuth2"><a href="#理解OAuth2" class="headerlink" title="理解OAuth2"></a>理解OAuth2</h1><p>[TOC]</p>
+<hr>
+<h2 id="Oatuh2用来做什么"><a href="#Oatuh2用来做什么" class="headerlink" title="Oatuh2用来做什么"></a>Oatuh2用来做什么</h2><p>有这样一种场景，一个用户（假设是QQ），希望让一个第三方的应用（比如说某个论坛），能够得到关于自身的一些信息（唯一用户标识，比如说QQ号，用户个人信息，比如说是一些基础资料，昵称和头像等）。但是在获得这些资料的同时，却也不能提供用户名和密码之类的验证信息。比如说用户不可能将自身的用户名和密码给第三方让第三方到用户中心之类的地方去获取信息。要达到这样的结果肯定有许多的实现方式。而Oatuh2就是实现上述目标的一种规范，或者说是具体实现的指导方案。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注技术公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/09/29/%E7%90%86%E8%A7%A3OAuth2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/09/29/Netty%E5%A6%82%E4%BD%95%E7%9B%91%E6%8E%A7%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/29/Netty%E5%A6%82%E4%BD%95%E7%9B%91%E6%8E%A7%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/" class="post-title-link" itemprop="url">Netty如何监控内存泄露</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-29 08:00:00" itemprop="dateCreated datePublished" datetime="2019-09-29T08:00:00+08:00">2019-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:58:55" itemprop="dateModified" datetime="2020-02-07T14:58:55+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Netty如何监控内存泄露"><a href="#Netty如何监控内存泄露" class="headerlink" title="Netty如何监控内存泄露"></a>Netty如何监控内存泄露</h1><p>[TOC]</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>一般而言，在Netty程序中都会采用池化的ByteBuf，也就是<code>PooledByteBuf</code>以提高程序性能。但是<code>PooledByteBuf</code>需要在使用完毕后手工释放，否则就会因为<code>PooledByteBuf</code>申请的内存空间没有归还进而造成内存泄露，最终OOM。而一旦泄露发生，在复杂的应用程序中找到未手工释放的<code>ByteBuf</code>并不是一个简单的活计，在没有工具辅助的情况只能白盒检查所有源码，效率无疑十分低下。</p>
+<p>为了解决这个问题，Netty设计了专门的泄露检测接口用于实现对需要手动释放的资源对象的监控。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注技术公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/09/29/Netty%E5%A6%82%E4%BD%95%E7%9B%91%E6%8E%A7%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，8年研发经验。福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">SpringBoot FatJar启动原理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-26 09:00:00" itemprop="dateCreated datePublished" datetime="2019-09-26T09:00:00+08:00">2019-09-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-07 14:59:42" itemprop="dateModified" datetime="2020-02-07T14:59:42+08:00">2020-02-07</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="SpringBoot-FatJar启动原理"><a href="#SpringBoot-FatJar启动原理" class="headerlink" title="SpringBoot FatJar启动原理"></a>SpringBoot FatJar启动原理</h1><p>[TOC]</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文会探究下SpringBoot的启动原理。SpringBoot在打包的时候会将依赖包也打进最终的Jar，变成一个可运行的FatJar。也就是会形成一个Jar in Jar的结构。默认情况下，JDK提供的ClassLoader只能识别Jar中的class文件以及加载classpath下的其他jar包中的class文件。对于在jar包中的jar包是无法加载的。</p>
+<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -506,7 +988,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
