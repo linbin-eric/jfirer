@@ -167,6 +167,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/02/08/%E9%AB%98%E6%80%A7%E8%83%BDEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%A7%A3%E6%9E%90%E6%A1%86%E6%9E%B6jfireEL%E5%8F%91%E5%B8%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
+      <meta itemprop="name" content="风火">
+      <meta itemprop="description" content="博思软件技术架构部技术经理，福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。GitChat认证作者，关注团队效率，高并发等方面">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风火说">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/02/08/%E9%AB%98%E6%80%A7%E8%83%BDEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%A7%A3%E6%9E%90%E6%A1%86%E6%9E%B6jfireEL%E5%8F%91%E5%B8%83/" class="post-title-link" itemprop="url">高性能EL表达式解析框架 jfireEL 发布</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-08 08:00:00 / 修改时间：15:16:29" itemprop="dateCreated datePublished" datetime="2020-02-08T08:00:00+08:00">2020-02-08</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="高性能EL表达式解析框架-jfireEL-发布"><a href="#高性能EL表达式解析框架-jfireEL-发布" class="headerlink" title="高性能EL表达式解析框架 jfireEL 发布"></a>高性能EL表达式解析框架 jfireEL 发布</h1><h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>EL 表达式解析，在一些涉及到动态规则配置的场合使用较多。比如工作流引擎中的外部规则注入，比如 Spring 框架中的 SpEL 解析等等。jfireEL 框架支持常见的 EL 表达式，诸如四则运算，数组元素获取，链表元素获取，Map 键值对获取，属性获取，方法调用，级联调用，支持获取类定义，枚举定义，支持获取对象等等。</p>
+<p>相比于 SpringEL，jfireEL 在表达上更为简洁，比如对于 SpringEL，一个变量属性级联对比的表达式可以写为<code>vars[&#39;home&#39;].bool(vars[&#39;person&#39;].getAge() + &#39;12&#39; != vars[&#39;value&#39;])</code>，而jfireEL 的写法直接为<code>home.bool(person.getAge() + &#39;12&#39; != value)</code>。显然 jfireEL 的可读性更高。</p>
+<h2 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h2><p>使用 EL 表达式<code>vars[&#39;home&#39;].bool(vars[&#39;person&#39;].getAge() + &#39;12&#39; != vars[&#39;value&#39;])</code>对jfireEL，BeetlEL，SpringEL 三款框架进行性能对比验证。在进入测试之前均预热相同次数确保初始化完毕。三款框架性能对比如下</p>
+<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200208145713.png" alt=""></p>
+<h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><p>首先引入Maven依赖，如下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.jfireframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jfireEl<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>aegean-1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在代码中使用时，首先进行EL 表达式的解析，而后使用这个外部参数就可以对表达式进行求值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[] array = <span class="keyword">new</span> <span class="keyword">int</span>[]</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span></span><br><span class="line">&#125;;</span><br><span class="line">Map &lt; String, Object &gt; vars = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">vars.put(<span class="string">"array"</span>, array);</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"array[2]"</span>);<span class="comment">//使用静态方法parse解析字符串形式的EL表达式，得到一个表达式实例。该表达式是一个并发安全的实例，可以供后续反复的并发的调用。一次生成即可，无需反复生成。</span></span><br><span class="line">assertEquals(<span class="number">3</span>, lexer.calculate(vars));<span class="comment">//外部参数通过Map的形式传递。使用方法calculate根据给定的参数计算得到表达式的值</span></span><br></pre></td></tr></table></figure>
+
+<p>在 EL 表达式中，如果一个字符串使用<code>&#39;&#39;</code>进行包围，则被认为是一个字符串；否则的话，可以被认定为变量名，方法名，参数名，具体某个枚举的名称，视上下文的情况而定。</p>
+<p>jfireEL 使用 Map 作为参数的载体，其 Key 的值就是变量名，value 对应的就是变量值。</p>
+<h2 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h2><p>具体的代码使用方法可以参见如下示例。</p>
+<h3 id="获取元素支持"><a href="#获取元素支持" class="headerlink" title="[] 获取元素支持"></a>[] 获取元素支持</h3><p>jfireEL 支持使用<code>[]</code>对数组元素，List，Map进行属性的获取，比如下面的表达式都是正确且合法的。</p>
+<p><strong>获取数组元素</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[] array = <span class="keyword">new</span> <span class="keyword">int</span>[]</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span></span><br><span class="line">&#125;;</span><br><span class="line">Map &lt; String, Object &gt; vars = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">vars.put(<span class="string">"array"</span>, array);</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"array[2]"</span>); <span class="comment">//EL 表达式解析</span></span><br><span class="line">assertEquals(<span class="number">3</span>, lexer.calculate(vars)); <span class="comment">//EL 表达式执行</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>获取List中元素</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">List &lt; String &gt; list = <span class="keyword">new</span> ArrayList &lt; String &gt; ();</span><br><span class="line">list.add(<span class="string">"1212"</span>);</span><br><span class="line">list.add(<span class="string">"13"</span>);</span><br><span class="line">Map &lt; String, Object &gt; vars = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">vars.put(<span class="string">"list"</span>, list);</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"list[1]"</span>);</span><br><span class="line">assertEquals(<span class="string">"13"</span>, lexer.calculate(vars));</span><br></pre></td></tr></table></figure>
+
+<p><strong>获取Map键值</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Map &lt; String, String &gt; map = <span class="keyword">new</span> HashMap &lt; String, String &gt; ();</span><br><span class="line">map.put(<span class="string">"1"</span>, <span class="string">"12"</span>);</span><br><span class="line">Map &lt; String, Object &gt; vars = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">vars.put(<span class="string">"map"</span>, map);</span><br><span class="line">vars.put(<span class="string">"age"</span>, <span class="string">"1"</span>);</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"map['1']"</span>);</span><br><span class="line">assertEquals(<span class="string">"12"</span>, lexer.calculate(vars));</span><br><span class="line">Expression lexer2 = Expression.parse(<span class="string">"map[age]"</span>);</span><br><span class="line">assertEquals(<span class="string">"12"</span>, lexer2.calculate(vars));</span><br></pre></td></tr></table></figure>
+
+<h3 id="四则运算支持"><a href="#四则运算支持" class="headerlink" title="四则运算支持"></a>四则运算支持</h3><p>四则运算，加减乘除，求余的支持如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Expression lexer = Expression.parse(<span class="string">"1+4/2"</span>);</span><br><span class="line">assertEquals(<span class="number">3</span>, lexer.calculate(<span class="keyword">null</span>)); <span class="comment">//对于不需要注入参数计算的场合，入参可以直接为null，不影响运算</span></span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"5-(4-1)"</span>);</span><br><span class="line">assertEquals(<span class="number">2</span>, lexer.calculate(<span class="keyword">null</span>));</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"1*2-1"</span>);</span><br><span class="line">assertEquals(<span class="number">1</span>, lexer.calculate(<span class="keyword">null</span>));</span><br></pre></td></tr></table></figure>
+
+<h3 id="对象属性获取和类属性获取支持"><a href="#对象属性获取和类属性获取支持" class="headerlink" title="对象属性获取和类属性获取支持"></a>对象属性获取和类属性获取支持</h3><p>支持使用<code>.</code>进行对象属性获取。而如果要获取静态类的属性，支持使用<code>T(ClassName)</code>的形式获取静态类，再使用<code>.</code>来获取对应的属性。两者的代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PropertyTest</span> <span class="keyword">extends</span> <span class="title">TestSupport</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> age = <span class="number">12</span>;</span><br><span class="line">    <span class="comment">//对象属性获取</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            Expression lexer = Expression.parse(<span class="string">"home.person.age"</span>);</span><br><span class="line">            <span class="comment">//home 是一个对象，包含一个对象属性 person，age是person中的一个数字属性</span></span><br><span class="line">            assertEquals(person.age, lexer.calculate(vars));</span><br><span class="line">            lexer = Expression.parse(<span class="string">"home.person.age"</span>, Functional.build().setPropertyFetchByUnsafe(<span class="keyword">true</span>).setRecognizeEveryTime(<span class="keyword">false</span>).toFunction());</span><br><span class="line">            assertEquals(person.age, lexer.calculate(vars));</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="comment">//类属性获取</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test2</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//com.jfireframework.jfireel.PropertyTest 就是测试类本身，使用T()包围表明这是一个类的全限定名</span></span><br><span class="line">        <span class="keyword">int</span> result = Expression.parse(<span class="string">"T(com.jfireframework.jfireel.PropertyTest).age"</span>).calculate();</span><br><span class="line">        assertEquals(age, result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的对象属性获取可以看到，jfireEL 框架<strong>支持级联操作</strong>。</p>
+<h3 id="三元表达式支持"><a href="#三元表达式支持" class="headerlink" title="三元表达式支持"></a>三元表达式支持</h3><p>jfireEL 支持 expression？value1:value2 这种形式的三元表达式，具体代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">assertEquals(<span class="number">1</span>, Expression.parse(<span class="string">"2&gt;1?1:2"</span>).calculate());</span><br><span class="line">assertEquals(<span class="number">1</span>, Expression.parse(<span class="string">"3-2+1&gt;1?1:2"</span>).calculate());</span><br><span class="line">assertEquals(<span class="number">1</span>, Expression.parse(<span class="string">"3-2+1&gt;1?2-1:2"</span>).calculate());</span><br><span class="line">assertEquals(<span class="number">2</span>, Expression.parse(<span class="string">"3-2+1&lt;1?2:1+1"</span>).calculate());</span><br><span class="line">Map &lt; String, Object &gt; vars = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">Map &lt; String, Object &gt; param = <span class="keyword">new</span> HashMap &lt; String, Object &gt; ();</span><br><span class="line">param.put(<span class="string">"b"</span>, <span class="keyword">false</span>);</span><br><span class="line">vars.put(<span class="string">"map"</span>, param);</span><br><span class="line">assertEquals(<span class="number">2</span>, Expression.parse(<span class="string">"map['b']?3:1*2"</span>).calculate(vars));</span><br><span class="line">assertEquals(<span class="number">4</span>, Expression.parse(<span class="string">"(map['b']?3:2)*2"</span>).calculate(vars));</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法调用获取"><a href="#方法调用获取" class="headerlink" title="方法调用获取"></a>方法调用获取</h3><p>方法调用也是使用<code>.</code>作为开始符号，和属性获取不同的是，其需要使用<code>()</code>作为结束符号，并且可以根据情况，支持入参填入。具体代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Expression lexer = Expression.parse(<span class="string">"home.person.getAge()"</span>);</span><br><span class="line">assertEquals(person.age, lexer.calculate(vars));</span><br><span class="line">Expression lexer = Expression.parse(<span class="string">"home.personAge2(person.getAge()+2)"</span>);<span class="comment">//方法调用支持入参，并且支持在入参中执行计算</span></span><br><span class="line">assertEquals(person.getAge() + <span class="number">2</span>, lexer.calculate(vars));</span><br></pre></td></tr></table></figure>
+
+<h3 id="枚举类支持"><a href="#枚举类支持" class="headerlink" title="枚举类支持"></a>枚举类支持</h3><p>jfireEL 支持获取具体的枚举实例，也获取类属性的方式相同，代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EnumTest</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">enum</span> Name</span><br><span class="line">    &#123;</span><br><span class="line">        dd;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Expression lexer = Expression.parse(<span class="string">"T(com.jfireframework.jfireel.EnumTest$Name).dd"</span>);</span><br><span class="line">        assertEquals(Name.dd, lexer.calculate());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="开源地址"><a href="#开源地址" class="headerlink" title="开源地址"></a>开源地址</h2><p>Gitee: <a href="https://gitee.com/eric_ds/jfireEL" target="_blank" rel="noopener">https://gitee.com/eric_ds/jfireEL</a></p>
+<p>Github: <a href="https://github.com/linbin-eric/jfireEL" target="_blank" rel="noopener">https://github.com/linbin-eric/jfireEL</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -845,83 +944,12 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
-      <meta itemprop="name" content="风火">
-      <meta itemprop="description" content="博思软件技术架构部技术经理，福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。GitChat认证作者，关注团队效率，高并发等方面">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="风火说">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">SpringBoot FatJar启动原理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-26 09:00:00" itemprop="dateCreated datePublished" datetime="2019-09-26T09:00:00+08:00">2019-09-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 14:59:42" itemprop="dateModified" datetime="2020-02-07T14:59:42+08:00">2020-02-07</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="SpringBoot-FatJar启动原理"><a href="#SpringBoot-FatJar启动原理" class="headerlink" title="SpringBoot FatJar启动原理"></a>SpringBoot FatJar启动原理</h1><p>[TOC]</p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文会探究下SpringBoot的启动原理。SpringBoot在打包的时候会将依赖包也打进最终的Jar，变成一个可运行的FatJar。也就是会形成一个Jar in Jar的结构。默认情况下，JDK提供的ClassLoader只能识别Jar中的class文件以及加载classpath下的其他jar包中的class文件。对于在jar包中的jar包是无法加载的。</p>
-<p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2019/09/26/SpringBoot%20FatJar%E5%90%AF%E5%8A%A8%E5%8E%9F%E7%90%86/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
 
 
 
@@ -988,7 +1016,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
