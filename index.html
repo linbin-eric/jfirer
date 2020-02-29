@@ -202,7 +202,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-02-29 08:00:00 / 修改时间：16:52:22" itemprop="dateCreated datePublished" datetime="2020-02-29T08:00:00+08:00">2020-02-29</time>
+              <time title="创建时间：2020-02-29 08:00:00 / 修改时间：16:54:16" itemprop="dateCreated datePublished" datetime="2020-02-29T08:00:00+08:00">2020-02-29</time>
             </span>
 
           
@@ -218,47 +218,14 @@
       
           <h1 id="理解-Java-内存模型的因果性约束"><a href="#理解-Java-内存模型的因果性约束" class="headerlink" title="理解 Java 内存模型的因果性约束"></a>理解 Java 内存模型的因果性约束</h1><p>[TOC]</p>
 <h2 id="欢迎讨论"><a href="#欢迎讨论" class="headerlink" title="欢迎讨论"></a>欢迎讨论</h2><p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
-<h2 id="规范理解"><a href="#规范理解" class="headerlink" title="规范理解"></a>规范理解</h2><p>这部分的内容比较抽象，首先是一开始的定义，如下</p>
-<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200229131252.png" alt="image-20200229131229165"></p>
-<p>红色下划线的内容应该是理解的关键。首先，E 是一个特定的执行序列，其由指令集合 A 以及用于对集合 A 内部存在的 PO，SO，SW，HB 排序构成。C<sub>i</sub> 是被 E 包含的一个子集，也就是说 C<sub>i</sub> 中的指令全部都在执行 E 的指令集合 A 中存在。</p>
-<p>来看第二，第三和第四个红线（忽略A是无限集合的情况，无限集合意味着线程出现了死循环，永不终止，这并不是一个合理的程序），这三者合在一起理解，可以认为是 C<sub>i</sub> 增加一个指令，就构成了 C<sub>i+1</sub>，也就形成了新的 A<sub>i+1</sub> 。而新的 A<sub>i+1</sub> 结合 PO,SO,SW,HB 关系就成为了新的 E<sub>i+1</sub> 。</p>
-<p>接着来看后续的定义</p>
-<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200229135644.png" alt=""></p>
-<p>这 5 个约束合在一起实际上是说明如何构成一个 C 集合。简单而言，C<sub>i</sub> 是 A<sub>i</sub>的一个子集，并且这个子集和执行轨迹E<sub>i</sub> 拥有相同的 HB，SO 关系，且 C<sub>i</sub> 中写入操作的写入值和 E<sub>i</sub> 中相同，C<sub>i</sub> 中对写入值的观察结果和 E<sub>i</sub> 中相同。而 E<sub>i</sub> 是逐步构成 E 的第 i 步骤，最终 E<del>n</del> 等同于 E 。这实际上约束了 C 是如何构成的，它并不是凭空而来，而是不断的将 E 中的指令添加到 C 之中，并且这些添加的指令都和 E 拥有相关的观察效果，写入值，以及偏序关系。通过确保一系列的 E<sub>i</sub> 都是合法的，最终确定 E 是合法的。</p>
-<p>再来剩下的两条规则</p>
-<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200229140935.png" alt="image-20200229140913252"></p>
-<p>第 6 条规则定义了要往集合 C 中添加读取指令时，该指令的观察结果。换句话说集合 C<del>i-1</del> 中的写入操作产生的效果，能被任意未添加到该集合中的写入操作观察到。</p>
-<p>第 7 条规则和上面的 5 条规则相同，也是在明确在集合 C 中产生的观察效果在执行轨迹 E 中也是存在的。</p>
-<p>7个规则都在描述在集合 C 中的写入值，读取结果，指令排列顺序都是和 E 等同，因此通过不断的构建 C<sub>i</sub> ，最终 C<del>n</del> 等同于 A<del>n</del> ，再加上在 C<del>n</del> 中的写入值，读取结果，指令排列顺序，就构成了最终的 E 。而如果这一系列的 C<sub>i</sub> 都是“合法”的话，则最终的执行轨迹 E 也是合法的。</p>
-<p><strong>当我们需要向集合新增一个读取指令时，其读取到的值只能在该集合中的写入值。提交指令到集合中时，如果存在HB 关系 或依赖关系的语句阻止其提交，则提交不能成功。</strong></p>
-<h2 id="例子练习"><a href="#例子练习" class="headerlink" title="例子练习"></a>例子练习</h2><h3 id="例子1"><a href="#例子1" class="headerlink" title="例子1"></a>例子1</h3><p>首先来看一段代码，如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">nonvolatile global <span class="keyword">int</span> a = <span class="number">0</span>, b = <span class="number">0</span>;</span><br><span class="line">ThreadA()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> aL = a;</span><br><span class="line">    <span class="keyword">if</span>(aL == <span class="number">1</span>) b = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">ThreadB()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> bL = b;</span><br><span class="line">    <span class="keyword">if</span>(bL == <span class="number">1</span>) a = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>对于内存模型而言，其只关注操作内存的指令，在执行轨迹 E 的 A 集合的内容是</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> aL = a;</span><br><span class="line">b = <span class="number">1</span>;</span><br><span class="line">bL = b;</span><br><span class="line">a = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
-<p>由于<code>int aL = a;</code>和<code>a = 1;</code>不存在 HB 关系，因此可以通过数据竞争的方式读取到该写入值，也就是<code>aL</code>的值是 1 。<code>bL = b;</code>和<code>b = 1;</code>不存在 HB 关系，因此可以通过数据竞争的方式读取到该写入值，也就是<code>bL</code>的值是 1 。</p>
-<p>一个读取操作可以读取的到值或者是通过 HB 关系得到，或者是通过数据竞争得到。也就是说，在没有 HB 关系阻止该读取结果时，该读取结果是允许的，这被称之为 HB 一致性。显然，上面的输出结果<code>aL==bL==1</code>是符合 HB 一致性的。</p>
-<p>然而从顺序一致性执行的角度而言，这种输出结果就好像是因为<code>aL</code>读取到线程 B 写入的值，产生了<code>b=1</code>的结果，而这个结果导致了<code>bL==1</code>的结果，而这个结果导致了<code>a=1</code>的结果，而<code>a==1</code>导致了<code>aL=1</code>。形成了一个循环，显然这是违背直觉的。而 JMM 中因果性的要求就是用来判定这种执行轨迹是否合法的依据。</p>
-<p>再用因果性分析这个执行之前，我们先看另外一个更简单一些的例子，代码如下</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0: x == y == 0</span><br><span class="line"> </span><br><span class="line">Thread 1:</span><br><span class="line">1: r1 = x;</span><br><span class="line">2: y = 1;</span><br><span class="line"> </span><br><span class="line">Thread 2:</span><br><span class="line">3: r2 = y;</span><br><span class="line">4: x = r2;</span><br></pre></td></tr></table></figure>
-
-<p>这个例子反复出现，显然我们知道<code>r1==r2==1</code>是一个合法的输出结果。因为重排序的原因，<code>y=1</code>被执行，而后<code>r2=y</code>观察到这个写入，<code>x=r2</code>同样得到值 1，<code>r1=x</code>观察到这个写入。下面我们使用因果性来分析这个执行轨迹。</p>
-<p>首先我们将集合 C 中添加指令 2 。与指令 2 存在 HB 关系的是指令 0 和 1 。他们都不会阻止指令 2 的发生，因此指令 2 被允许添加到集合 C 中，此时有 C<sub>1</sub> 。</p>
-<p>我们用 W(variable,value) 来表达对一个变量 variable 写入 value 的值，用 R(variable,value) 表达从变量 variable 中读取到 value 的值。</p>
-<p>因此目前我们有 C<sub>0</sub>= {W(x,0),W(y,0)} 的初始状态。而 C<sub>1</sub>=C<sub>0</sub> U {W(y,1)} 。然后我们添加指令 3 到 C<sub>1</sub> 中，按照 HB 关系，指令观察到的值应该是指令 0 写入的。但是同时，它也允许观察到提交集合中已经写入的值，也就是存在于提交集合中指令 2 的写入值。因此我们有 C<sub>2</sub>=C<sub>1</sub> U {R(y,1)} 。</p>
-<p>接着我们提交指令 4 ，显然此时有 C<sub>3</sub>=C<sub>2</sub> U {W(x,1)} 。</p>
-<p>最后我们提交指令 1，按照 HB 关系，此时允许的观察值由指令 0 写入，也就是 0 。与上述相同，允许其观察到在提交集合中的写入值，因此 C<sub>4</sub>=C<sub>3</sub> U {R(x,1)} 。</p>
-<p>C<sub>4</sub>=A<sub>4</sub>，C<sub>4</sub> 中的写入值，读取值，排列顺序都与 E<sub>4</sub>  相同，也与 E 相同。因此判定该执行轨迹是合法的，其表现是符合 JMM 要求的。</p>
-<p>接下来我们回到最开始的例子，如果我们要得到<code>bL==1</code>的结果，意味着我们需要执行<code>b=1</code>这个指令。而要执行该指令，我们需要执行<code>int aL = a;</code>指令并且读取到值 1 。<strong>注意，因果性的判断是需要考虑条件判断因素的，而 HB 一致性则不考虑，它仅仅是提取所有的可能执行指令并且假定其执行。</strong></p>
-<p>从提交集合的角度出发，我们需要提交<code>int aL = a;</code>实际上是想提交 R(a,1) 。但是 C<sub>0</sub>={W(x,0),W(y,0)} ，C<sub>1</sub> 中的读取操作的读取值只能由 C<sub>0</sub> 中的写入造成，因此 R(a,1) 无法被提交到 C<sub>1</sub> 中。这就意味着达成<code>a==b==1</code>的提交集合不合法，因此对应的执行轨迹也是非法的。所以这种结果不被 JMM 允许。</p>
-<h3 id="例子2"><a href="#例子2" class="headerlink" title="例子2"></a>例子2</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="comment">/* non-volatile */</span> a;</span><br><span class="line"><span class="keyword">int</span> <span class="comment">/* non-volatile */</span> b;</span><br><span class="line">ThreadA()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> tmp = a;</span><br><span class="line">    b = tmp;</span><br><span class="line">&#125;</span><br><span class="line">ThreadB()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> tmp = b;</span><br><span class="line">    a = tmp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>对于上面的代码，<code>a==b==1</code>的结果是符合 HB 一致性的。看起来这个比例子 1 中出现的情况更费解一些，因为 1 这个值似乎是无中生有的。但是我们首先假设<code>int tmp = a;</code>读取到了 1 ，此时<code>b = tmp;</code>将会写入 1 。而<code>int tmp = b;</code>又读取到了该值，这会导致<code>a = tmp;</code>写入值 1 ，恰恰满足了<code>int tmp = a;</code>读取到 1 的需要。HB 一致性中，如果没有 HB 关系阻止一个值被读取，则该读取都是被允许的，也就是可以认为<code>int tmp = a;</code>通过数据竞争的方式读取到了未来的写入值。按照这种方式考虑，这个例子实际上类似于例子1中的第二个示例。</p>
-<p>但是显然，这个结果是违反直觉的，其结果也被 JMM 禁止。我们使用因果性的方式进行分析。</p>
-<p>首先，显然我们有 C<sub>0</sub>={W(a,0),W(b,0)} 。接着我们提交<code>int tmp = a;</code>（不能先提交<code>b = tmp;</code>是因为<code>int tmp = a;</code>与其存在依赖关系，且有 HB 关系）。根据 C<sub>0</sub> 的内容，显然此时只允许提交 R(a,0) 或 R(b,0) 。通过因果性分析，我们得到这个例子的合法输出只能是<code>a==b==1</code>。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>非正式的说，可以认为通过结合 HB 一致性和因果性要求得到 JMM 。这两个约束结合在一起，才有了 JMM 对程序员的保证：如果一个程序是正确同步的，其程序表现为顺序一致性。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/02/29/%E7%90%86%E8%A7%A3%20Java%20%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E4%B8%AD%E7%9A%84%E5%9B%A0%E6%9E%9C%E6%80%A7%E7%BA%A6%E6%9D%9F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
