@@ -19,7 +19,7 @@
 <script id="hexo-configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
-    hostname: new URL('https://eric_ds.gitee.io').hostname,
+    hostname: new URL('http://jfirer.com').hostname,
     root: '/',
     scheme: 'Pisces',
     version: '7.7.1',
@@ -49,7 +49,7 @@
   <meta name="description" content="ConcurrentHashMap源码走读[TOC] 简介在从JDK8开始，为了提高并发度，ConcurrentHashMap的源码进行了很大的调整。在JDK7中，采用的是分段锁的思路。简单的说，就是ConcurrentHashMap是由多个HashMap构成。当需要进行写入操作的时候，会寻找到对应的HashMap，使用synchronized对对应的hashmap加锁，然后执行写入操作。显然，并">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ConcurrentHashMap源码走读">
-<meta property="og:url" content="https://eric_ds.gitee.io/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/index.html">
+<meta property="og:url" content="http://jfirer.com/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/index.html">
 <meta property="og:site_name" content="风火说">
 <meta property="og:description" content="ConcurrentHashMap源码走读[TOC] 简介在从JDK8开始，为了提高并发度，ConcurrentHashMap的源码进行了很大的调整。在JDK7中，采用的是分段锁的思路。简单的说，就是ConcurrentHashMap是由多个HashMap构成。当需要进行写入操作的时候，会寻找到对应的HashMap，使用synchronized对对应的hashmap加锁，然后执行写入操作。显然，并">
 <meta property="og:locale" content="zh_CN">
@@ -60,7 +60,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20191029144409.png">
 
-<link rel="canonical" href="https://eric_ds.gitee.io/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">
+<link rel="canonical" href="http://jfirer.com/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">
 
 
 <script id="page-configurations">
@@ -140,6 +140,16 @@
     <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
 
   </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
     <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
@@ -171,12 +181,12 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://eric_ds.gitee.io/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">
+    <link itemprop="mainEntityOfPage" href="http://jfirer.com/2019/11/04/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
       <meta itemprop="name" content="风火">
-      <meta itemprop="description" content="博思软件技术架构部技术经理，福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。GitChat认证作者，关注团队效率，高并发等方面">
+      <meta itemprop="description" content="技术经理，省级标准撰写人，GitChat认证作者。喜欢研究技术。<br/>欢迎加入技术交流群186233599讨论交流。<br/>也欢迎关注笔者公众号：风火说。">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -503,16 +513,22 @@
     <img class="site-author-image" itemprop="image" alt="风火"
       src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
   <p class="site-author-name" itemprop="name">风火</p>
-  <div class="site-description" itemprop="description">博思软件技术架构部技术经理，福建省省级标准《双离线场景二维码标准》撰写人，多年大型项目研发经验。GitChat认证作者，关注团队效率，高并发等方面</div>
+  <div class="site-description" itemprop="description">技术经理，省级标准撰写人，GitChat认证作者。喜欢研究技术。<br/>欢迎加入技术交流群186233599讨论交流。<br/>也欢迎关注笔者公众号：风火说。</div>
 </div>
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
@@ -620,6 +636,15 @@
 
 
   
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
 
 
 

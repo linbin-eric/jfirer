@@ -46,21 +46,20 @@
   };
 </script>
 
-  <meta name="description" content="高性能Java序列化框架Fse发布[TOC] 使用场景将Java对象序列化为二进制数据进行保存，以及二进制数据反向序列化为Java对象，在很多场景中都有应用。比如将对象序列化后离线存储至其他介质，或者存储于Redis这样的缓存之中。 目前常见的有几种框架可以支撑，比如 Hession ，Kryo，Fst，Protobuf，JDK原生等。有一些框架需要提前编写元数据配置文件以支撑跨语言序列化能力，比">
+  <meta name="description" content="JVM中的方法分派[TOC] 方法分派指的是虚拟机将代码解析为虚拟机运行中方法的内存入口地址的过程。Java 语言中存在两个分派的过程：静态分派和动态分派。 欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="高性能Java序列化框架Fse发布">
-<meta property="og:url" content="http://jfirer.com/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/index.html">
+<meta property="og:title" content="JVM中的方法分派">
+<meta property="og:url" content="http://jfirer.com/2020/02/13/%E6%96%B9%E6%B3%95%E5%88%86%E6%B4%BE/index.html">
 <meta property="og:site_name" content="风火说">
-<meta property="og:description" content="高性能Java序列化框架Fse发布[TOC] 使用场景将Java对象序列化为二进制数据进行保存，以及二进制数据反向序列化为Java对象，在很多场景中都有应用。比如将对象序列化后离线存储至其他介质，或者存储于Redis这样的缓存之中。 目前常见的有几种框架可以支撑，比如 Hession ，Kryo，Fst，Protobuf，JDK原生等。有一些框架需要提前编写元数据配置文件以支撑跨语言序列化能力，比">
+<meta property="og:description" content="JVM中的方法分派[TOC] 方法分派指的是虚拟机将代码解析为虚拟机运行中方法的内存入口地址的过程。Java 语言中存在两个分派的过程：静态分派和动态分派。 欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200204221213.png">
-<meta property="article:published_time" content="2020-02-03T00:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-07T07:03:01.916Z">
+<meta property="article:published_time" content="2020-02-13T00:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-13T09:55:09.801Z">
 <meta property="article:author" content="风火">
+<meta property="article:tag" content="JVM">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200204221213.png">
 
-<link rel="canonical" href="http://jfirer.com/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/">
+<link rel="canonical" href="http://jfirer.com/2020/02/13/%E6%96%B9%E6%B3%95%E5%88%86%E6%B4%BE/">
 
 
 <script id="page-configurations">
@@ -72,7 +71,7 @@
   };
 </script>
 
-  <title>高性能Java序列化框架Fse发布 | 风火说</title>
+  <title>JVM中的方法分派 | 风火说</title>
   
 
 
@@ -181,7 +180,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://jfirer.com/2020/02/03/%E9%AB%98%E6%80%A7%E8%83%BDJava%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6Fse%E5%8F%91%E5%B8%83/">
+    <link itemprop="mainEntityOfPage" href="http://jfirer.com/2020/02/13/%E6%96%B9%E6%B3%95%E5%88%86%E6%B4%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200207124809.jpg">
@@ -194,7 +193,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          高性能Java序列化框架Fse发布
+          JVM中的方法分派
         </h1>
 
         <div class="post-meta">
@@ -203,16 +202,10 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-02-03 08:00:00" itemprop="dateCreated datePublished" datetime="2020-02-03T08:00:00+08:00">2020-02-03</time>
+              <time title="创建时间：2020-02-13 08:00:00 / 修改时间：17:55:09" itemprop="dateCreated datePublished" datetime="2020-02-13T08:00:00+08:00">2020-02-13</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 15:03:01" itemprop="dateModified" datetime="2020-02-07T15:03:01+08:00">2020-02-07</time>
-              </span>
 
           
             <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
@@ -232,22 +225,23 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="高性能Java序列化框架Fse发布"><a href="#高性能Java序列化框架Fse发布" class="headerlink" title="高性能Java序列化框架Fse发布"></a>高性能Java序列化框架Fse发布</h1><p>[TOC]</p>
-<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>将Java对象序列化为二进制数据进行保存，以及二进制数据反向序列化为Java对象，在很多场景中都有应用。比如将对象序列化后离线存储至其他介质，或者存储于Redis这样的缓存之中。</p>
-<p>目前常见的有几种框架可以支撑，比如 Hession ，Kryo，Fst，Protobuf，JDK原生等。有一些框架需要提前编写元数据配置文件以支撑跨语言序列化能力，比如 Protobuf 。不过如果团队的技术栈是统一的 Java 体系的话，则能够开箱即用的序列化框架使用起来会更加方便一些，特别有些时候对象特别复杂，编写元数据配置文件也是很繁琐的一个事情。</p>
-<p>Fse 框架正是应用于这样的场景，不需要编写元数据配置信息，开箱即用的 Java 序列化框架，对需要序列化的对象没有任何特殊要求。在性能基准测试中，该框架的性能表现显著优于其他框架，下面是测试对比</p>
-<p><img src="https://markdownpic-1251577930.cos.ap-chengdu.myqcloud.com/20200204221213.png" alt=""></p>
+        <h1 id="JVM中的方法分派"><a href="#JVM中的方法分派" class="headerlink" title="JVM中的方法分派"></a>JVM中的方法分派</h1><p>[TOC]</p>
+<p>方法分派指的是虚拟机将代码解析为虚拟机运行中方法的内存入口地址的过程。Java 语言中存在两个分派的过程：静态分派和动态分派。</p>
 <p>欢迎加入技术交流群186233599讨论交流，也欢迎关注笔者公众号：风火说。</p>
 <a id="more"></a>
 
-<h2 id="使用说明"><a href="#使用说明" class="headerlink" title="使用说明"></a>使用说明</h2><p>首先在Pom文件中引入依赖，如下</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.jfireframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fse<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>aegean-2.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h2><p>静态分派由Java的编译器完成。先来看个例子，代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class Father</span><br><span class="line">&#123;&#125;</span><br><span class="line"><span class="keyword">public</span> Class Son extends Father</span><br><span class="line">&#123;&#125;</span><br><span class="line"><span class="keyword">public</span> Class SayHello</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">say</span><span class="params">(Father value)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"father"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">say</span><span class="params">(Son value)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"son"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">main</span><span class="params">(String[] args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Father son = <span class="keyword">new</span> Son();</span><br><span class="line">    SayHello say = <span class="keyword">new</span> SayHello();</span><br><span class="line">    System.out.println(say.say(son));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>API 使用方式如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Fse fse = <span class="keyword">new</span> Fse();</span><br><span class="line">TestData data = <span class="keyword">new</span> TestData();</span><br><span class="line"><span class="comment">//创建一个二进制数组容器，用于容纳序列化后的输出。容器大小会在需要时自动扩大，入参仅决定初始化大小。</span></span><br><span class="line">ByteArray buf = ByteArray.allocate(<span class="number">100</span>);</span><br><span class="line"><span class="comment">//执行序列化，会将序列化对象序列化到二进制数组容器之中。</span></span><br><span class="line">fse.serialize(data, buf);</span><br><span class="line"><span class="comment">//得到序列化后的二进制数组结果</span></span><br><span class="line"><span class="keyword">byte</span>[] resultBytes = buf.toArray();</span><br><span class="line"><span class="comment">//清空容器内容，可以反复使用该容器</span></span><br><span class="line">buf.clear();</span><br><span class="line"><span class="comment">//填入数据，准备进行反序列化</span></span><br><span class="line">buf.put(resultBytes);</span><br><span class="line">TestData result = (TestData) fse.deSerialize(buf);</span><br><span class="line">assertTrue(result.equals(data));</span><br></pre></td></tr></table></figure>
+<p>这个方法会输出<code>father</code>。这是因为Java 是一个静态类型的语言，简单的说，就是变量本身是有类型的。在这个例子中，<code>main</code>方法中的变量<code>son</code>是有类型的，其类型为<code>Father</code>。而编译器在编译<code>say.say(son)</code>这一句的时候，就会根据方法接受者的类型，也就是<code>SayHello</code>，方法名称<code>say</code>，方法入参类型<code>Father</code>进行方法寻找。<strong>注意，此时查找所使用的类型全部都是变量的声明类型，而非其实际类型。</strong></p>
+<p>静态分配就是编译器期间完成的方法分派。可以根据多于一个的参数（方法接收者，以及方法入参）进行分派，分派参数的类型使用的变量的类型。</p>
+<h2 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h2><p>动态分派是虚拟机在运行过程中，完成的方法分派。先来看个例子，代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class Father</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">say</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"i am father"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> Class Son extends Father</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">say</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"i am son"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Father son = <span class="keyword">new</span> Son();</span><br><span class="line">    System.out.println(son.say());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="开源地址"><a href="#开源地址" class="headerlink" title="开源地址"></a>开源地址</h2><p>Gitee:<a href="https://gitee.com/eric_ds/fse" target="_blank" rel="noopener">https://gitee.com/eric_ds/fse</a></p>
-<p>Github:<a href="https://github.com/linbin-eric/Fse" target="_blank" rel="noopener">https://github.com/linbin-eric/Fse</a></p>
+<p>对于<code>say</code>方法，在虚拟机运行到这行代码，首先已经通过静态分派得到了这个方法的符号引用，也就是<code>String void say();</code>,但是在类<code>Father</code>和<code>Son</code>中都有这个签名的方法。此时虚拟机会根据这个方法的接收者来寻找方法对应的内存入口地址。这里的方法接收者是一个<code>Son</code>对象实例，因此该符号引用被解析为类<code>Son</code>中<code>say</code>方法的内存入口地址。最终控制台输出<code>i am son</code>。</p>
+<p>动态分派仅仅只使用一个参数，也就是实际的方法接收者类型来进行分派。</p>
+<p>上述流程是一个概念模型，由于动态分派在运行过程中十分频繁，虚拟机会使用各种方式来加速查找流程。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对于 Java 而言，其是一个静态多分派，动态单分派的语言。</p>
 
     </div>
 
@@ -276,6 +270,9 @@
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JVM/" rel="tag"># JVM</a>
+          </div>
 
         
 
@@ -283,12 +280,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/12/%E5%BF%83%E8%B7%B3%E4%B8%8E%E8%B6%85%E6%97%B6%EF%BC%9A%E9%AB%98%E5%B9%B6%E5%8F%91%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%97%B6%E9%97%B4%E8%BD%AE%E8%B6%85%E6%97%B6%E5%99%A8/" rel="prev" title="心跳与超时：高并发高性能的时间轮超时器">
-      <i class="fa fa-chevron-left"></i> 心跳与超时：高并发高性能的时间轮超时器
+    <a href="/2020/02/08/%E9%AB%98%E6%80%A7%E8%83%BDEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%A7%A3%E6%9E%90%E6%A1%86%E6%9E%B6jfireEL%E5%8F%91%E5%B8%83/" rel="prev" title="高性能EL表达式解析框架 jfireEL 发布">
+      <i class="fa fa-chevron-left"></i> 高性能EL表达式解析框架 jfireEL 发布
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/02/08/%E9%AB%98%E6%80%A7%E8%83%BDEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%A7%A3%E6%9E%90%E6%A1%86%E6%9E%B6jfireEL%E5%8F%91%E5%B8%83/" rel="next" title="高性能EL表达式解析框架 jfireEL 发布">
-      高性能EL表达式解析框架 jfireEL 发布 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/02/29/%E7%90%86%E8%A7%A3%20Java%20%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E4%B8%AD%E7%9A%84%E5%9B%A0%E6%9E%9C%E6%80%A7%E7%BA%A6%E6%9D%9F/" rel="next" title="理解 Java 内存模型的因果性约束">
+      理解 Java 内存模型的因果性约束 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -349,7 +346,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#高性能Java序列化框架Fse发布"><span class="nav-number">1.</span> <span class="nav-text">高性能Java序列化框架Fse发布</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">1.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用说明"><span class="nav-number">1.2.</span> <span class="nav-text">使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开源地址"><span class="nav-number">1.3.</span> <span class="nav-text">开源地址</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JVM中的方法分派"><span class="nav-number">1.</span> <span class="nav-text">JVM中的方法分派</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#静态分派"><span class="nav-number">1.1.</span> <span class="nav-text">静态分派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态分派"><span class="nav-number">1.2.</span> <span class="nav-text">动态分派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
